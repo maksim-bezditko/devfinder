@@ -10,6 +10,7 @@ import { extractLocalUser } from "utils/extract-local-user";
 
 function App() {
   const [user, setUser] = useState<LocalGithubUser | null>(null);
+  const [noRes, setNoRes] = useState<boolean>(false);
 
   const fetchUsers = async (text: string) => {
     const response = await fetch(`https://api.github.com/users/${text}`);
@@ -17,11 +18,14 @@ function App() {
     if (response.ok) {
       const user =  await response.json() as GithubError | GithubError;
       if (isGithubUser(user)) {
+        setNoRes(false);
         setUser(extractLocalUser(user))
         localStorage.setItem("current", text)
       } else {
-        setUser(null);
+        setNoRes(true);
       }
+    } else {
+      setNoRes(true)
     }
   }
 
@@ -33,7 +37,7 @@ function App() {
     <div className="app">
       <Container>
         <Header/>
-        <Search error={!user} onSearch={fetchUsers}/>
+        <Search error={noRes} onSearch={fetchUsers}/>
         {user && <UserCard
           {...user}
         />}
